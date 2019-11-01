@@ -9,7 +9,7 @@ Open command line in Windows and navigate to the Hyperbox-classifier folder, and
 
 <i>Instruction of executing the online version of GFMM (file: onlinegfmm.py)</i>:
 
-    python onlinegfmm.py arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10
+    python faster_onlinegfmm.py arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10
 
 INPUT parameters from command line:
 
@@ -31,7 +31,7 @@ Note: parameters with string datatype should be put between quotation marks (" "
 
 Example:
 
-    python onlinegfmm.py 1 synthetic_train.dat synthetic_test.dat True 0.6 0.5 1 min True "[0, 1]"
+    python faster_onlinegfmm.py 1 synthetic_train.dat synthetic_test.dat True 0.6 0.5 1 min True "[0, 1]"
     
 ![alt text](https://github.com/thanhtung09t2/Hyperbox-classifier/blob/master/Images/Demo.PNG)
     
@@ -44,15 +44,11 @@ To the drawing display on the separated window (not inline mode as default), fro
 <i>Instruction of executing the batch learning versions of GFMM (files: accelbatchgfmm.py, batchgfmm_v1.py, batchgfmm_v2.py)</i>: </br>
 <b> Full batch learning</b>: </br>
 
-    python batchgfmm_v2.py arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11 arg12
-    
-<b> Faster version of full batch learning</b>: </br>
-
-    python batchgfmm_v1.py arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11 arg12
+    python batchgfmm.py arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11 arg12
     
 <b> Improved version of batch learning - AGGLO2 </b>: </br>
 
-    python accelbatchgfmm.py arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11 arg12
+    python faster_accelbatchgfmm.py arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11 arg12
 
 INPUT parameters from command line: </br>
 
@@ -76,12 +72,12 @@ For instance: </br>
 
 <i> Full batch learning: </i>
 
-    python batchgfmm_v2.py 1 synthetic_train.dat synthetic_test.dat True 0.6 1 0.5 short min True "[0, 1]"
+    python batchgfmm.py 1 synthetic_train.dat synthetic_test.dat True 0.6 1 0.5 short min True "[0, 1]"
     
 ![alt text](https://github.com/thanhtung09t2/Hyperbox-classifier/blob/master/Images/Demo-AGGLO-SM.PNG)
 
 <i> Improved version of batch learning - AGGLO2: </i>
 
-    python accelbatchgfmm.py 1 synthetic_train.dat synthetic_test.dat True 0.6 1 0.5 mid min True "[0, 1]"
+    python faster_accelbatchgfmm.py 1 synthetic_train.dat synthetic_test.dat True 0.6 1 0.5 mid min True "[0, 1]"
   
 ![alt text](https://github.com/thanhtung09t2/Hyperbox-classifier/blob/master/Images/Demo-AGGLO-2.PNG)
