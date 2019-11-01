@@ -9,7 +9,7 @@ Open command line in Windows and navigate to the Hyperbox-classifier folder, and
 
 <i>Instruction of executing the online version of GFMM (file: onlinegfmm.py)</i>:
 
-    python faster_onlinegfmm.py arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10
+    python faster_onlinegfmm.py arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11
 
 INPUT parameters from command line:
 
@@ -25,7 +25,7 @@ INPUT parameters from command line:
     arg7:  The minimum value of maximum size of hyperboxes (teta_min: default = teta)
     arg8:  gamma value (default: 1)
     arg9:  Operation used to compute membership value: 'min' or 'prod' (default: 'min')
-    arg10:  Do normalization of datasets or not? True: Normilize, False: No normalize (default: True)
+    arg10: Do normalization of datasets or not? True: Normilize, False: No normalize (default: True)
     arg11: range of input values after normalization (default: [0, 1])
 
 Note: parameters with string datatype should be put between quotation marks (" ") </br>
