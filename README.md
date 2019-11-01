@@ -18,20 +18,21 @@ INPUT parameters from command line:
     arg2:  path to file containing the training dataset (arg1 = 1) or both training and testing datasets (arg1 = 2)
     arg3:  + path to file containing the testing dataset (arg1 = 1)
            + percentage of the training dataset in the input file
-    arg4:  + True: drawing hyperboxes during the training process
+    arg4: + path to file containing the validation dataset
+    arg5:  + True: drawing hyperboxes during the training process
            + False: no drawing
-    arg5:  Maximum size of hyperboxes (teta, default: 1)
-    arg6:  The minimum value of maximum size of hyperboxes (teta_min: default = teta)
-    arg7:  gamma value (default: 1)
-    arg8:  Operation used to compute membership value: 'min' or 'prod' (default: 'min')
-    arg9:  Do normalization of datasets or not? True: Normilize, False: No normalize (default: True)
-    arg10: range of input values after normalization (default: [0, 1])
+    arg6:  Maximum size of hyperboxes (teta, default: 1)
+    arg7:  The minimum value of maximum size of hyperboxes (teta_min: default = teta)
+    arg8:  gamma value (default: 1)
+    arg9:  Operation used to compute membership value: 'min' or 'prod' (default: 'min')
+    arg10:  Do normalization of datasets or not? True: Normilize, False: No normalize (default: True)
+    arg11: range of input values after normalization (default: [0, 1])
 
 Note: parameters with string datatype should be put between quotation marks (" ") </br>
 
 Example:
 
-    python faster_onlinegfmm.py 1 synthetic_train.dat synthetic_test.dat True 0.6 0.5 1 min True "[0, 1]"
+    python faster_onlinegfmm.py 1 synthetic_train.dat synthetic_test.dat "" True 0.6 0.5 1 min True "[0, 1]"
     
 ![alt text](https://github.com/thanhtung09t2/Hyperbox-classifier/blob/master/Images/Demo.PNG)
     
