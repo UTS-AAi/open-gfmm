@@ -416,82 +416,82 @@ if __name__ == '__main__':
     arg11: + range of input values after normalization (default: [0, 1])
     """
     # Init default parameters
-#    if len(sys.argv) < 6:
-#        isDraw = False
-#    else:
-#        isDraw = string_to_boolean(sys.argv[5])
-#
-#    if len(sys.argv) < 7:
-#        teta = 1
-#    else:
-#        teta = float(sys.argv[6])
-#
-#    if len(sys.argv) < 8:
-#        teta_min = teta
-#    else:
-#        teta_min = float(sys.argv[7])
-#
-#    if len(sys.argv) < 9:
-#        gamma = 1
-#    else:
-#        gamma = float(sys.argv[8])
-#
-#    if len(sys.argv) < 10:
-#        oper = 'min'
-#    else:
-#        oper = sys.argv[9]
-#
-#    if len(sys.argv) < 11:
-#        isNorm = True
-#    else:
-#        isNorm = string_to_boolean(sys.argv[10])
-#
-#    if len(sys.argv) < 12:
-#        norm_range = [0, 1]
-#    else:
-#        norm_range = ast.literal_eval(sys.argv[11])
-#
-#    # print('isDraw = ', isDraw, ' teta = ', teta, ' teta_min = ', teta_min, ' gamma = ', gamma, ' oper = ', oper, ' isNorm = ', isNorm, ' norm_range = ', norm_range)
-#    start_t = time.perf_counter()
-#    if sys.argv[1] == '1':
-#        training_file = sys.argv[2]
-#        testing_file = sys.argv[3]
-#
-#        # Read training file
-#        Xtr, X_tmp, patClassIdTr, pat_tmp = loadDataset(training_file, 1, False)
-#        # Read testing file
-#        X_tmp, Xtest, pat_tmp, patClassIdTest = loadDataset(testing_file, 0, False)
-#
-#    else:
-#        dataset_file = sys.argv[2]
-#        percent_Training = float(sys.argv[3])
-#        Xtr, Xtest, patClassIdTr, patClassIdTest = loadDataset(dataset_file, percent_Training, False)
-#    
-#    validation_file = sys.argv[4]
-#    
-#    if (not validation_file) == True:
-#        # empty validation file
-#        print('no pruning')
-#        isPruning = False
-#    else:
-#        print('pruning')
-#        isPruning = True
-#        Xval, _, patClassIdVal, _ = loadDataset(validation_file, 1, False)
-#    
-    isPruning = False
-    training_file = "C:\\Hyperbox-based-ML\\Dataset\\train_test\\training_testing_data\\spambase_dps_tr.dat"
-    testing_file = "C:\\Hyperbox-based-ML\\Dataset\\train_test\\training_testing_data\\spambase_dps_test.dat"
-    gamma = 1
-    teta = 0.1
-    teta_min = 0.1
-    isDraw = False
-    oper = 'min'
-    isNorm = False
-    norm_range = [0, 1]
-    # Read training file
-    Xtr, X_tmp, patClassIdTr, pat_tmp = loadDataset(training_file, 1, False)
-    # Read testing file
-    X_tmp, Xtest, pat_tmp, patClassIdTest = loadDataset(testing_file, 0, False)
+    if len(sys.argv) < 6:
+        isDraw = False
+    else:
+        isDraw = string_to_boolean(sys.argv[5])
+
+    if len(sys.argv) < 7:
+        teta = 1
+    else:
+        teta = float(sys.argv[6])
+
+    if len(sys.argv) < 8:
+        teta_min = teta
+    else:
+        teta_min = float(sys.argv[7])
+
+    if len(sys.argv) < 9:
+        gamma = 1
+    else:
+        gamma = float(sys.argv[8])
+
+    if len(sys.argv) < 10:
+        oper = 'min'
+    else:
+        oper = sys.argv[9]
+
+    if len(sys.argv) < 11:
+        isNorm = True
+    else:
+        isNorm = string_to_boolean(sys.argv[10])
+
+    if len(sys.argv) < 12:
+        norm_range = [0, 1]
+    else:
+        norm_range = ast.literal_eval(sys.argv[11])
+
+    # print('isDraw = ', isDraw, ' teta = ', teta, ' teta_min = ', teta_min, ' gamma = ', gamma, ' oper = ', oper, ' isNorm = ', isNorm, ' norm_range = ', norm_range)
+    start_t = time.perf_counter()
+    if sys.argv[1] == '1':
+        training_file = sys.argv[2]
+        testing_file = sys.argv[3]
+
+        # Read training file
+        Xtr, X_tmp, patClassIdTr, pat_tmp = loadDataset(training_file, 1, False)
+        # Read testing file
+        X_tmp, Xtest, pat_tmp, patClassIdTest = loadDataset(testing_file, 0, False)
+
+    else:
+        dataset_file = sys.argv[2]
+        percent_Training = float(sys.argv[3])
+        Xtr, Xtest, patClassIdTr, patClassIdTest = loadDataset(dataset_file, percent_Training, False)
+    
+    validation_file = sys.argv[4]
+    
+    if (not validation_file) == True:
+        # empty validation file
+        print('no pruning')
+        isPruning = False
+    else:
+        print('pruning')
+        isPruning = True
+        Xval, _, patClassIdVal, _ = loadDataset(validation_file, 1, False)
+    
+#    isPruning = False
+#    training_file = "C:\\Hyperbox-based-ML\\Dataset\\train_test\\training_testing_data\\spambase_dps_tr.dat"
+#    testing_file = "C:\\Hyperbox-based-ML\\Dataset\\train_test\\training_testing_data\\spambase_dps_test.dat"
+#    gamma = 1
+#    teta = 0.1
+#    teta_min = 0.1
+#    isDraw = False
+#    oper = 'min'
+#    isNorm = False
+#    norm_range = [0, 1]
+#    # Read training file
+#    Xtr, X_tmp, patClassIdTr, pat_tmp = loadDataset(training_file, 1, False)
+#    # Read testing file
+#    X_tmp, Xtest, pat_tmp, patClassIdTest = loadDataset(testing_file, 0, False)
     
     classifier = OnlineGFMM(gamma, teta, teta_min, isDraw, oper, isNorm, norm_range)
     classifier.fit(Xtr, Xtr, patClassIdTr)
