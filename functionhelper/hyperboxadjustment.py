@@ -507,9 +507,14 @@ def is_overlap_general_formulas(V, W, V_cmp, W_cmp, find_min_overlap=False):
                 V_cmp_tile = np.repeat([V_cmp], len(hyperbox_ids_overlap), axis=0)
                 W_cmp_tile = np.repeat([W_cmp], len(hyperbox_ids_overlap), axis=0)
                 
-                overlap_value_mat =  np.minimum((W[hyperbox_ids_overlap] - V_cmp_tile), (W_cmp_tile - V[hyperbox_ids_overlap]))
+                overlap_value_mat =  np.minimum((W[hyperbox_ids_overlap] - V_cmp_tile), (W_cmp_tile - V[hyperbox_ids_overlap])).astype(np.float64)
                 
-                overlap_value_mat = np.where(overlap_value_mat == 0, np.nan, overlap_value_mat)
+                # Find indices of rows in matrix with all values being 0
+                all_zero_row_id = ~overlap_value_mat.any(axis=1)
+                
+                for index, val in enumerate(all_zero_row_id):
+                    if val == False:
+                        overlap_value_mat[index] = np.where(overlap_value_mat[index] == 0, np.nan, overlap_value_mat[index])
                 
                 min_overlap_dimension = np.nanargmin(overlap_value_mat, axis=1)
                 
