@@ -11,8 +11,9 @@ import numpy as np
 from functionhelper.membershipcalc import simpsonMembership
 from functionhelper.bunchdatatype import Bunch
 from functionhelper.measurehelper import manhattan_distance, rfmm_distance
+import random as rd
 
-def predict(V, W, classId, XhT, patClassIdTest, gama = 1):
+def predict(V, W, classId, XhT, patClassIdTest, gama = 1, is_using_manhattan=True):
     """
     FMNN classifier (test routine)
     
@@ -50,29 +51,31 @@ def predict(V, W, classId, XhT, patClassIdTest, gama = 1):
         bmax = mem[i,:].max()	                               # get max membership value
         maxVind = np.nonzero(mem[i,:] == bmax)[0]           # get indexes of all hyperboxes with max membership
         
-        if len(np.unique(classId[maxVind])) > 1:
-            misclass[i] = True
-        else:
-            misclass[i] = ~(np.any(classId[maxVind] == patClassIdTest[i]))
-            
-        if len(np.unique(classId[maxVind])) > 1:
-            #print("Using Manhattan function")
-            XgT_mat = np.ones((len(maxVind), 1)) * XhT[i]
-            # Find all average points of all hyperboxes with the same membership value
-            avg_point_mat = (V[maxVind] + W[maxVind]) / 2
-            # compute the manhattan distance from XgT_mat to all average points of all hyperboxes with the same membership value
-            maht_dist = manhattan_distance(avg_point_mat, XgT_mat)
-            
-            id_min_dist = maht_dist.argmin()
-            
-            predicted_class[i] = classId[maxVind[id_min_dist]]
-            if classId[maxVind[id_min_dist]] == patClassIdTest[i]:
+        winner_cls = np.unique(classId[maxVind])
+        
+        if len(winner_cls) > 1:
+            if is_using_manhattan == True:
+                #print("Using Manhattan function")
+                XgT_mat = np.ones((len(maxVind), 1)) * XhT[i]
+                # Find all average points of all hyperboxes with the same membership value
+                avg_point_mat = (V[maxVind] + W[maxVind]) / 2
+                # compute the manhattan distance from XgT_mat to all average points of all hyperboxes with the same membership value
+                maht_dist = manhattan_distance(avg_point_mat, XgT_mat)
+                
+                id_min_dist = maht_dist.argmin()
+                
+                predicted_class[i] = classId[maxVind[id_min_dist]]
+            else:
+                # select random class
+                predicted_class[i] = rd.choice(winner_cls)
+                
+            if predicted_class[i] == patClassIdTest[i]:
                 misclass[i] = False
             else:
                 misclass[i] = True
         else:
             predicted_class[i] = classId[maxVind[0]]
-            if classId[maxVind[0]] == patClassIdTest[i]:
+            if predicted_class[i] == patClassIdTest[i]:
                 misclass[i] = False
             else:
                 misclass[i] = True

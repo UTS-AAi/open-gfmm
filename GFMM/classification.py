@@ -56,24 +56,19 @@ def predict(V, W, classId, XlT, XuT, patClassIdTest, gama = 1, oper = 'min'):
         bmax = mem.max()	                                          # get max membership value
         maxVind = np.nonzero(mem == bmax)[0]                         # get indexes of all hyperboxes with max membership
 
-        if bmax == 0:
-            predicted_class[i] = classId[maxVind[0]]
-            if predicted_class[i] == patClassIdTest[i]:
-                misclass[i] = False
-            else:
-                misclass[i] = True
+        winner_cls = np.unique(classId[maxVind])
+        if len(winner_cls) > 1:
+            #print('Input is in the boundary')
+            # make random selection
+            predicted_class[i] = random.choice(winner_cls)
         else:
-            if len(np.unique(classId[maxVind])) > 1:
-                #print('Input is in the boundary')
-                misclass[i] = True
-            else:
-                predicted_class[i] = classId[maxVind[0]]
-                if np.any(classId[maxVind] == patClassIdTest[i]) == True or patClassIdTest[i] == UNLABELED_CLASS:
-                    misclass[i] = False
-                else:
-                    misclass[i] = True
-                #misclass[i] = ~(np.any(classId[maxVind] == patClassIdTest[i]) | (patClassIdTest[i] == 0))
-
+            predicted_class[i] = classId[maxVind[0]]
+        
+        if predicted_class[i] == patClassIdTest[i] or patClassIdTest[i] == UNLABELED_CLASS:
+            misclass[i] = False
+        else:
+            misclass[i] = True
+                
     # results
     summis = np.sum(misclass).astype(np.int64)
 

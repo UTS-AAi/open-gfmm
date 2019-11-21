@@ -119,7 +119,7 @@ class BaseFMNNClassifier(object):
         plt.pause(self.delayConstant)
         
     
-    def predict(self, X_Test, patClassIdTest):
+    def predict(self, X_Test, patClassIdTest, is_using_manhattan=True):
         """
         Perform classification
         
@@ -158,7 +158,7 @@ class BaseFMNNClassifier(object):
         result = None
         
         if X_Test.shape[0] > 0:
-            result = predict(self.V, self.W, self.classId, X_Test, patClassIdTest, self.gamma)
+            result = predict(self.V, self.W, self.classId, X_Test, patClassIdTest, self.gamma, is_using_manhattan)
         
         return result
     
