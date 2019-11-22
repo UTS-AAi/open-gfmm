@@ -359,13 +359,12 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
     
         #initialization
         yX = XlT.shape[0]
-        mem = np.zeros((yX, self.V.shape[0]))
         no_predicted_samples_hyperboxes = np.zeros((len(self.classId), 2))
         # classifications
         for i in range(yX):
-            mem[i, :] = memberG(XlT[i, :], XuT[i, :], self.V, self.W, self.gamma, self.oper) # calculate memberships for all hyperboxes
-            bmax = mem[i,:].max()	                                          # get max membership value
-            maxVind = np.nonzero(mem[i,:] == bmax)[0]                         # get indexes of all hyperboxes with max membership
+            mem = memberG(XlT[i, :], XuT[i, :], self.V, self.W, self.gamma, self.oper) # calculate memberships for all hyperboxes
+            bmax = mem.max()	                                          # get max membership value
+            maxVind = np.nonzero(mem == bmax)[0]                         # get indexes of all hyperboxes with max membership
             
             if len(maxVind) == 1:
                 # Only one hyperbox with the highest membership function
