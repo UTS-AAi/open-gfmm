@@ -63,14 +63,14 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
         self.sigma = sigma      
 
 
-    def fit(self, X_l, X_u, patClassId):
+    def fit(self, X_l, X_u, patClassId, num_pat=None):
         """
         Training the classifier
 
          Xl             Input data lower bounds (rows = objects, columns = features)
          Xu             Input data upper bounds (rows = objects, columns = features)
          patClassId     Input data class labels (crisp). patClassId[i] = 0 corresponds to an unlabeled item
-
+         num_pat        Save the number of samples in hyperboxes [X_l, X_u]
         """
         #print('--Online Learning--')
 
@@ -143,8 +143,11 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                 self.V = np.array([X_l[0]])
                 self.W = np.array([X_u[0]])
                 self.classId = np.array([patClassId[0]])
-                self.counter = np.array([1]) # save number of samples of each hyperbox
-
+                if num_pat is None:
+                    self.counter = np.array([1]) # save number of samples of each hyperbox
+                else:
+                    self.counter = np.array([num_pat[0]])
+                    
                 if self.isDraw == True:
                     # draw hyperbox
                     box_color = 'k'
@@ -167,12 +170,14 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                     lb_sameX = self.classId[id_lb_sameX]
 
                     b = memberG(X_l[i], X_u[i], V_sameX, W_sameX, self.gamma)
-                    consider_hypeboxes_id = np.nonzero(b >= threshold)[0]
+                    index = np.argsort(b)[::-1]
+                    consider_hypeboxes_id = index[b[index] >= threshold]
+                    #consider_hypeboxes_id = np.nonzero(b >= threshold)[0]
                     
                     if len(consider_hypeboxes_id) > 0:
-                        b = b[consider_hypeboxes_id]
-                        index = np.argsort(b)[::-1]
-                        consider_hypeboxes_id = consider_hypeboxes_id[index]   
+                        #b = b[consider_hypeboxes_id]
+                        #index = np.argsort(b)[::-1]
+                        #consider_hypeboxes_id = consider_hypeboxes_id[index]   
                     
                         if b[index[0]] != 1 or (classOfX != lb_sameX[consider_hypeboxes_id[0]] and classOfX != UNLABELED_CLASS):
                             adjust = False
@@ -205,7 +210,10 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                                         # adjust the j-th hyperbox
                                         self.V[j] = minV_new
                                         self.W[j] = maxW_new
-                                        self.counter[j] = self.counter[j] + 1
+                                        if num_pat is None:
+                                            self.counter[j] = self.counter[j] + 1
+                                        else:
+                                            self.counter[j] = self.counter[j] + num_pat[i]
                                         
                                         if classOfX != UNLABELED_CLASS and self.classId[j] == UNLABELED_CLASS:
                                             self.classId[j] = classOfX
@@ -238,7 +246,10 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                                 self.V = np.concatenate((self.V, X_l[i].reshape(1, -1)), axis = 0)
                                 self.W = np.concatenate((self.W, X_u[i].reshape(1, -1)), axis = 0)
                                 self.classId = np.concatenate((self.classId, [classOfX]))
-                                self.counter = np.concatenate((self.counter, [1]))
+                                if num_pat is None:
+                                    self.counter = np.concatenate((self.counter, [1]))
+                                else:
+                                    self.counter = np.concatenate((self.counter, [num_pat[i]]))
         
                                 if self.isDraw:
                                     # handle drawing graph
@@ -254,8 +265,11 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                         self.V = np.concatenate((self.V, X_l[i].reshape(1, -1)), axis = 0)
                         self.W = np.concatenate((self.W, X_u[i].reshape(1, -1)), axis = 0)
                         self.classId = np.concatenate((self.classId, [classOfX]))
-                        self.counter = np.concatenate((self.counter, [1]))
-                        
+                        if num_pat is None:
+                            self.counter = np.concatenate((self.counter, [1]))
+                        else:
+                            self.counter = np.concatenate((self.counter, [num_pat[i]]))
+                
                         if self.isDraw:
                             # handle drawing graph
                             box_color = 'k'
@@ -270,7 +284,11 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                     self.V = np.concatenate((self.V, X_l[i].reshape(1, -1)), axis = 0)
                     self.W = np.concatenate((self.W, X_u[i].reshape(1, -1)), axis = 0)
                     self.classId = np.concatenate((self.classId, [classOfX]))
-                    self.counter = np.concatenate((self.counter, [1]))
+                    
+                    if num_pat is None:
+                        self.counter = np.concatenate((self.counter, [1]))
+                    else:
+                        self.counter = np.concatenate((self.counter, [num_pat[i]]))
 
                     if self.isDraw:
                         # handle drawing graph
@@ -339,6 +357,8 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                 result = predict_with_probability(self.V, self.W, self.classId, self.counter, Xl_Test, Xu_Test, patClassIdTest, self.gamma, self.oper)
             else:
                 result = predict(self.V, self.W, self.classId, Xl_Test, Xu_Test, patClassIdTest, self.gamma, self.oper)
+                
+            self.predicted_class = np.array(result.predicted_class, np.int)
 
         return result
     
