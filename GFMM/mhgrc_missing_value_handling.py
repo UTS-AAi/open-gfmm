@@ -443,7 +443,7 @@ class Info_Presentation_Multi_Layer_Classifier_GFMM(object):
             # init two lists containing number of patterns classified correctly and incorrectly for each hyperbox
             no_predicted_samples_hyperboxes = np.zeros((len(self.classId), 2))
             
-			XlVal = None
+            XlVal = None
 			XuVal = None
 			patClassIdVal = None
 			

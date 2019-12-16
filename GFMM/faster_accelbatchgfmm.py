@@ -49,6 +49,7 @@ from functionhelper.drawinghelper import drawbox
 from functionhelper.hyperboxadjustment import isOverlap, modifiedIsOverlap
 from GFMM.basebatchlearninggfmm import BaseBatchLearningGFMM
 from functionhelper.membershipcalc import asym_similarity_one_many, memberG
+from GFMM.classification import predict_with_probability, predict
 
 class AccelBatchGFMM(BaseBatchLearningGFMM):
     
@@ -60,7 +61,7 @@ class AccelBatchGFMM(BaseBatchLearningGFMM):
         self.sing = sing
         
         # Currently, we do not yet use cardin and clusters
-#        self.cardin = cardin
+        self.cardin = cardin
 #        self.clusters = clusters
     
     
@@ -87,6 +88,9 @@ class AccelBatchGFMM(BaseBatchLearningGFMM):
 #            self.clusters = np.empty(yX, dtype=object)
 #            for i in range(yX):
 #                self.clusters[i] = np.array([i], dtype = np.int64)
+        
+        if len(self.cardin) == 0:
+            self.cardin = np.ones(yX)
         
         if self.isDraw:
             mark_col = np.array(['r', 'g', 'b', 'y', 'c', 'm', 'k'])
@@ -164,6 +168,8 @@ class AccelBatchGFMM(BaseBatchLearningGFMM):
                             self.W = newW
                             self.classId = newClassId
                             
+                            self.cardin[int(pairewise_maxb[i, 0])] = self.cardin[int(pairewise_maxb[i, 0])] + self.cardin[int(pairewise_maxb[i, 1])]
+                            self.cardin = np.append(self.cardin[0:int(pairewise_maxb[i, 1])], self.cardin[int(pairewise_maxb[i, 1]) + 1:])
 #                            self.cardin[int(pairewise_maxb[i, 0])] = self.cardin[int(pairewise_maxb[i, 0])] + self.cardin[int(pairewise_maxb[i, 1])]
 #                            #self.cardin = np.delete(self.cardin, int(pairewise_maxb[i, 1]))
 #                            self.cardin = np.append(self.cardin[0:int(pairewise_maxb[i, 1])], self.cardin[int(pairewise_maxb[i, 1]) + 1:])
@@ -204,6 +210,62 @@ class AccelBatchGFMM(BaseBatchLearningGFMM):
         self.elapsed_training_time = time_end - time_start
          
         return self
+    
+    def predict(self, Xl_Test, Xu_Test, patClassIdTest, newVer = True):
+        """
+        Perform classification
+
+            result = predict(Xl_Test, Xu_Test, patClassIdTest)
+
+        INPUT:
+            Xl_Test             Test data lower bounds (rows = objects, columns = features)
+            Xu_Test             Test data upper bounds (rows = objects, columns = features)
+            patClassIdTest	    Test data class labels (crisp)
+            newVer              + True: Using cardinality to support the classification process
+                                + False: No use of an additional criterion
+
+        OUTPUT:
+            result        A object with Bunch datatype containing all results as follows:
+                          + summis           Number of misclassified objects
+                          + misclass         Binary error map
+                          + sumamb           Number of objects with maximum membership in more than one class
+                          + out              Soft class memberships
+                          + mem              Hyperbox memberships
+        """
+        #Xl_Test, Xu_Test = delete_const_dims(Xl_Test, Xu_Test)
+        # Normalize testing dataset if training datasets were normalized
+        if len(self.mins) > 0:
+            noSamples = Xl_Test.shape[0]
+            Xl_Test = self.loLim + (self.hiLim - self.loLim) * (Xl_Test - np.ones((noSamples, 1)) * self.mins) / (np.ones((noSamples, 1)) * (self.maxs - self.mins))
+            Xu_Test = self.loLim + (self.hiLim - self.loLim) * (Xu_Test - np.ones((noSamples, 1)) * self.mins) / (np.ones((noSamples, 1)) * (self.maxs - self.mins))
+
+            if Xl_Test.min() < self.loLim or Xu_Test.min() < self.loLim or Xl_Test.max() > self.hiLim or Xu_Test.max() > self.hiLim:
+                print('Test sample falls outside', self.loLim, '-', self.hiLim, 'interval')
+                print('Number of original samples = ', noSamples)
+
+                # only keep samples within the interval loLim-hiLim
+                indXl_good = np.where((Xl_Test >= self.loLim).all(axis = 1) & (Xl_Test <= self.hiLim).all(axis = 1))[0]
+                indXu_good = np.where((Xu_Test >= self.loLim).all(axis = 1) & (Xu_Test <= self.hiLim).all(axis = 1))[0]
+                indKeep = np.intersect1d(indXl_good, indXu_good)
+
+                Xl_Test = Xl_Test[indKeep, :]
+                Xu_Test = Xu_Test[indKeep, :]
+
+                print('Number of kept samples =', Xl_Test.shape[0])
+                #return
+
+        # do classification
+        result = None
+
+        if Xl_Test.shape[0] > 0:
+            if newVer:
+                result = predict_with_probability(self.V, self.W, self.classId, self.cardin, Xl_Test, Xu_Test, patClassIdTest, self.gamma)
+            else:
+                result = predict(self.V, self.W, self.classId, Xl_Test, Xu_Test, patClassIdTest, self.gamma)
+                
+            self.predicted_class = np.array(result.predicted_class, np.int)
+
+        return result  
             
         
     
