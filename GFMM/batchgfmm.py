@@ -64,7 +64,7 @@ class BatchGFMMV1(BaseBatchLearningGFMM):
         else:
             self.sing = 'max'
         
-#        self.cardin = cardin
+        self.cardin = cardin
 #        self.clusters = clusters       
         
     
@@ -85,6 +85,9 @@ class BatchGFMMV1(BaseBatchLearningGFMM):
         self.classId = patClassId
         
         yX, xX = X_l.shape
+		
+		if len(self.cardin) == 0:
+            self.cardin = np.ones(yX)
         
 #        if len(self.cardin) == 0 or len(self.clusters) == 0:
 #            self.cardin = np.ones(yX)
@@ -180,8 +183,8 @@ class BatchGFMMV1(BaseBatchLearningGFMM):
                     self.W = newW
                     self.classId = newClassId
                     
-#                    self.cardin[int(curmaxb[0])] = self.cardin[int(curmaxb[0])] + self.cardin[int(curmaxb[1])]
-#                    self.cardin = np.append(self.cardin[0:int(curmaxb[1])], self.cardin[int(curmaxb[1]) + 1:])
+                    self.cardin[int(curmaxb[0])] = self.cardin[int(curmaxb[0])] + self.cardin[int(curmaxb[1])]
+                    self.cardin = np.append(self.cardin[0:int(curmaxb[1])], self.cardin[int(curmaxb[1]) + 1:])
 #                            
 #                    self.clusters[int(curmaxb[0])] = np.append(self.clusters[int(curmaxb[0])], self.clusters[int(curmaxb[1])])
 #                    self.clusters = np.append(self.clusters[0:int(curmaxb[1])], self.clusters[int(curmaxb[1]) + 1:])
@@ -233,80 +236,80 @@ if __name__ == '__main__':
     arg12: + Use 'min' or 'max' (default) membership in case of assymetric similarity measure (simil='mid')
     """
     # Init default parameters
-    if len(sys.argv) < 5:
-        isDraw = False
-    else:
-        isDraw = string_to_boolean(sys.argv[4])
-    
-    if len(sys.argv) < 6:
-        teta = 1    
-    else:
-        teta = float(sys.argv[5])
-    
-    if len(sys.argv) < 7:
-        gamma = 1
-    else:
-        gamma = float(sys.argv[6])
-    
-    if len(sys.argv) < 8:
-        bthres = 0.5
-    else:
-        bthres = float(sys.argv[7])
-    
-    if len(sys.argv) < 9:
-        simil = 'mid'
-    else:
-        simil = sys.argv[8]
-    
-    if len(sys.argv) < 10:
-        oper = 'min'
-    else:
-        oper = sys.argv[9]
-    
-    if len(sys.argv) < 11:
-        isNorm = True
-    else:
-        isNorm = string_to_boolean(sys.argv[10])
-    
-    if len(sys.argv) < 12:
-        norm_range = [0, 1]
-    else:
-        norm_range = ast.literal_eval(sys.argv[11])
-        
-    if len(sys.argv) < 13:
-        sing = 'max'
-    else:
-        sing = sys.argv[12]
-        
-    if sys.argv[1] == '1':
-        training_file = sys.argv[2]
-        testing_file = sys.argv[3]
-        
-        # Read training file
-        Xtr, X_tmp, patClassIdTr, pat_tmp = loadDataset(training_file, 1, False)
-        # Read testing file
-        X_tmp, Xtest, pat_tmp, patClassIdTest = loadDataset(testing_file, 0, False)
-    
-    else:
-        dataset_file = sys.argv[2]
-        percent_Training = float(sys.argv[3])
-        Xtr, Xtest, patClassIdTr, patClassIdTest = loadDataset(dataset_file, percent_Training, False)
-    
-#    gamma = 1
-#    teta = 0.3
-#    bthres = 0.5
-#    simil = 'short'
-#    sing = 'min'
-#    isDraw = False
-#    oper = 'min'
-#    isNorm = False
-#    norm_range = [0, 1]
-#    training_file = "C:\\Hyperbox-based-ML\\Dataset\\train_test\\complex9_dps_train.dat"
-#    testing_file = "C:\\Hyperbox-based-ML\\Dataset\\train_test\\complex9_dps_test.dat"
-#    # Read training file
-#    Xtr, X_tmp, patClassIdTr, pat_tmp = loadDataset(training_file, 1, False)
-#    # Read testing file
-#    X_tmp, Xtest, pat_tmp, patClassIdTest = loadDataset(testing_file, 0, False)
+#    if len(sys.argv) < 5:
+#        isDraw = False
+#    else:
+#        isDraw = string_to_boolean(sys.argv[4])
+#    
+#    if len(sys.argv) < 6:
+#        teta = 1    
+#    else:
+#        teta = float(sys.argv[5])
+#    
+#    if len(sys.argv) < 7:
+#        gamma = 1
+#    else:
+#        gamma = float(sys.argv[6])
+#    
+#    if len(sys.argv) < 8:
+#        bthres = 0.5
+#    else:
+#        bthres = float(sys.argv[7])
+#    
+#    if len(sys.argv) < 9:
+#        simil = 'mid'
+#    else:
+#        simil = sys.argv[8]
+#    
+#    if len(sys.argv) < 10:
+#        oper = 'min'
+#    else:
+#        oper = sys.argv[9]
+#    
+#    if len(sys.argv) < 11:
+#        isNorm = True
+#    else:
+#        isNorm = string_to_boolean(sys.argv[10])
+#    
+#    if len(sys.argv) < 12:
+#        norm_range = [0, 1]
+#    else:
+#        norm_range = ast.literal_eval(sys.argv[11])
+#        
+#    if len(sys.argv) < 13:
+#        sing = 'max'
+#    else:
+#        sing = sys.argv[12]
+#        
+#    if sys.argv[1] == '1':
+#        training_file = sys.argv[2]
+#        testing_file = sys.argv[3]
+#        
+#        # Read training file
+#        Xtr, X_tmp, patClassIdTr, pat_tmp = loadDataset(training_file, 1, False)
+#        # Read testing file
+#        X_tmp, Xtest, pat_tmp, patClassIdTest = loadDataset(testing_file, 0, False)
+#    
+#    else:
+#        dataset_file = sys.argv[2]
+#        percent_Training = float(sys.argv[3])
+#        Xtr, Xtest, patClassIdTr, patClassIdTest = loadDataset(dataset_file, percent_Training, False)
+#    
+    gamma = 1
+    teta = 0.3
+    bthres = 0.5
+    simil = 'short'
+    sing = 'min'
+    isDraw = False
+    oper = 'min'
+    isNorm = False
+    norm_range = [0, 1]
+    training_file = "C:\\Hyperbox-based-ML\\Dataset\\train_test\\complex9_dps_train.dat"
+    testing_file = "C:\\Hyperbox-based-ML\\Dataset\\train_test\\complex9_dps_test.dat"
+    # Read training file
+    Xtr, X_tmp, patClassIdTr, pat_tmp = loadDataset(training_file, 1, False)
+    # Read testing file
+    X_tmp, Xtest, pat_tmp, patClassIdTest = loadDataset(testing_file, 0, False)
     
     classifier = BatchGFMMV1(gamma, teta, bthres, simil, sing, isDraw, oper, isNorm, norm_range)
     classifier.fit(Xtr, Xtr, patClassIdTr)
