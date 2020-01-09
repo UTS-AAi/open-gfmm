@@ -160,7 +160,7 @@ class BatchGFMMV1(BaseBatchLearningGFMM):
                 newV = np.concatenate((self.V[0:row1, :], np.minimum(self.V[row1, :], self.V[row2, :]).reshape(1, -1), self.V[row1 + 1:row2, :], self.V[row2 + 1:, :]), axis=0)
                 newW = np.concatenate((self.W[0:row1, :], np.maximum(self.W[row1, :], self.W[row2, :]).reshape(1, -1), self.W[row1 + 1:row2, :], self.W[row2 + 1:, :]), axis=0)
                 newClassId = np.concatenate((self.classId[0:row2], self.classId[row2 + 1:]))
-                if (newClassId[row1] == 0):
+                if (newClassId[row1] == UNLABELED_CLASS):
                     newClassId[row1] = newClassId[row2]
 #                index_remain = np.ones(len(self.classId)).astype(np.bool)
 #                index_remain[row2] = False
