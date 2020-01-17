@@ -77,8 +77,7 @@ class OnlineAggloGFMM(BaseBatchLearningGFMM):
         patClassId      Input data class labels (crisp)
         typeOfAgglo     Type of agglomerative learning
                          + 1: Accelerated agglomerative learning AGGLO-2
-                         + 2: Full batch learning slower version
-                         + 3: Full batch learning faster version
+                         + 2: Full batch learning faster version
         """
         if self.isNorm == True:
             X_l, X_u = self.dataPreprocessing(X_l, X_u)
@@ -98,8 +97,6 @@ class OnlineAggloGFMM(BaseBatchLearningGFMM):
         # Perform agglomerative learning
         if typeOfAgglo == 1:
             aggloClassifier = AccelBatchGFMM(self.gamma, self.teta_agglo, bthres = self.bthres, simil = self.simil, sing = self.sing, isDraw = self.isDraw, oper = self.oper, isNorm = False)
-        elif typeOfAgglo == 2:
-            aggloClassifier = BatchGFMMV2(self.gamma, self.teta_agglo, bthres = self.bthres, simil = self.simil, sing = self.sing, isDraw = self.isDraw, oper = self.oper, isNorm = False)
         else:
             aggloClassifier = BatchGFMMV1(self.gamma, self.teta_agglo, bthres = self.bthres, simil = self.simil, sing = self.sing, isDraw = self.isDraw, oper = self.oper, isNorm = False)
             

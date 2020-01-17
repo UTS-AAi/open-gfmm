@@ -86,7 +86,7 @@ class BatchGFMMV1(BaseBatchLearningGFMM):
         
         yX, xX = X_l.shape
 		
-		if len(self.cardin) == 0:
+        if len(self.cardin) == 0:
             self.cardin = np.ones(yX)
         
 #        if len(self.cardin) == 0 or len(self.clusters) == 0:

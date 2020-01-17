@@ -450,8 +450,8 @@ class Info_Presentation_Multi_Layer_Classifier_GFMM(object):
             # init two lists containing number of patterns classified correctly and incorrectly for each hyperbox
             no_predicted_samples_hyperboxes = np.zeros((len(self.classId), 2))
             XlVal = None
-			XuVal = None
-			patClassIdVal = None
+            XuVal = None
+            patClassIdVal = None
 			
             while True:
                 # handle in chunks
@@ -459,14 +459,14 @@ class Info_Presentation_Multi_Layer_Classifier_GFMM(object):
                 if chunk_data != None:
                     chunk_id = chunk_id + 1
                     
-					if XlVal is None:
-						XlVal = chunk_data.data.copy()
-						XuVal = XlVal.copy()
-						patClassIdVal = chunk_data.label.copy()
-					else:
-						XlVal = np.vstack((XlVal, chunk_data.data))
-						XuVal = XlVal.copy()
-						patClassIdVal = np.append(patClassIdVal, chunk_data.label)
+                    if XlVal is None:
+                        XlVal = chunk_data.data.copy()
+                        XuVal = XlVal.copy()
+                        patClassIdVal = chunk_data.label.copy()
+                    else:
+                        XlVal = np.vstack((XlVal, chunk_data.data))
+                        XuVal = XlVal.copy()
+                        patClassIdVal = np.append(patClassIdVal, chunk_data.label)
 						
                     # carried validation
                     no_predicted_samples_hyperboxes = self.predict_val(chunk_data.data, chunk_data.data, chunk_data.label, no_predicted_samples_hyperboxes)
@@ -476,52 +476,54 @@ class Info_Presentation_Multi_Layer_Classifier_GFMM(object):
             # pruning handling based on the validation results
             tmp_no_box = no_predicted_samples_hyperboxes.shape[0]
             accuracy_larger_half = np.zeros(tmp_no_box).astype(np.bool)
-			accuracy_larger_half_keep_nojoin = np.zeros(tmp_no_box).astype(np.bool)
+            accuracy_larger_half_keep_nojoin = np.zeros(tmp_no_box).astype(np.bool)
             for i in range(tmp_no_box):
                 if (no_predicted_samples_hyperboxes[i, 0] + no_predicted_samples_hyperboxes[i, 1] != 0) and no_predicted_samples_hyperboxes[i, 0] / (no_predicted_samples_hyperboxes[i, 0] + no_predicted_samples_hyperboxes[i, 1]) >= accuracy_threshold:
                     accuracy_larger_half[i] = True
-					accuracy_larger_half_keep_nojoin[i] = True
-				if no_predicted_samples_hyperboxes[i, 0] + no_predicted_samples_hyperboxes[i, 1] == 0:
-					accuracy_larger_half_keep_nojoin[i] = True
+                    accuracy_larger_half_keep_nojoin[i] = True
+                if no_predicted_samples_hyperboxes[i, 0] + no_predicted_samples_hyperboxes[i, 1] == 0:
+                    accuracy_larger_half_keep_nojoin[i] = True
 					
 			# keep one hyperbox for class prunned all
-			current_classes = np.unique(self.classId)
-			class_tmp = self.classId[accuracy_larger_half]
-			for c in current_classes:
-				if c not in class_tmp:
-					pos = np.nonzero(self.classId == c)
-					id_kept = np.random.randint(len(pos))
+            current_classes = np.unique(self.classId)
+            class_tmp = self.classId[accuracy_larger_half]
+            
+            for c in current_classes:
+                if c not in class_tmp:
+                    pos = np.nonzero(self.classId == c)
+                    id_kept = np.random.randint(len(pos))
 					# keep pos[id_kept]
-					accuracy_larger_half[pos[id_kept]] = True
+                    accuracy_larger_half[pos[id_kept]] = True
 				
             # Pruning
-			V_prun_remove = self.V[accuracy_larger_half]
-			W_prun_remove = self.W[accuracy_larger_half]
-			classId_prun_remove = self.classId[accuracy_larger_half]
-			centroid_prun_remove = self.centroid[accuracy_larger_half]
+            V_prun_remove = self.V[accuracy_larger_half]
+            W_prun_remove = self.W[accuracy_larger_half]
+            classId_prun_remove = self.classId[accuracy_larger_half]
+            centroid_prun_remove = self.centroid[accuracy_larger_half]
             no_pat_prun_remove = self.no_pat[accuracy_larger_half]
-        
-			W_prun_keep = self.W[accuracy_larger_half_keep_nojoin]
-			V_prun_keep = self.V[accuracy_larger_half_keep_nojoin]
-			classId_prun_keep = self.classId[accuracy_larger_half_keep_nojoin]
-			centroid_prun_keep = self.centroid[accuracy_larger_half_keep_nojoin]
+            
+            W_prun_keep = self.W[accuracy_larger_half_keep_nojoin]
+            V_prun_keep = self.V[accuracy_larger_half_keep_nojoin]
+            classId_prun_keep = self.classId[accuracy_larger_half_keep_nojoin]
+            centroid_prun_keep = self.centroid[accuracy_larger_half_keep_nojoin]
             no_pat_prun_keep = self.no_pat[accuracy_larger_half_keep_nojoin]
-        
-			result_prun_remove = predict_test_v2(V_prun_remove, W_prun_remove, classId_prun_remove, centroid_prun_remove, no_pat_prun_remove, XlVal, XuVal, patClassIdVal)
-			result_prun_keep_nojoin = predict(V_prun_keep, W_prun_keep, classId_prun_keep, centroid_prun_keep, no_pat_prun_keep, XlVal, XuVal, patClassIdVal)
-        
-			if (result_prun_remove.summis <= result_prun_keep_nojoin.summis):
-				self.V = V_prun_remove
-				self.W = W_prun_remove
-				self.classId = classId_prun_remove
-				self.centroid = centroid_prun_remove
-				self.no_pat = no_pat_prun_remove
-			else:
-				self.V = V_prun_keep
-				self.W = W_prun_keep
-				self.classId = classId_prun_keep
-				self.centroid = centroid_prun_keep
-				self.no_pat = no_pat_prun_keep
+            
+            result_prun_remove = predict_test_v2(V_prun_remove, W_prun_remove, classId_prun_remove, centroid_prun_remove, no_pat_prun_remove, XlVal, XuVal, patClassIdVal)
+            result_prun_keep_nojoin = predict(V_prun_keep, W_prun_keep, classId_prun_keep, centroid_prun_keep, no_pat_prun_keep, XlVal, XuVal, patClassIdVal)
+            
+            if (result_prun_remove.summis <= result_prun_keep_nojoin.summis):
+                self.V = V_prun_remove
+                self.W = W_prun_remove
+                self.classId = classId_prun_remove
+                self.centroid = centroid_prun_remove
+                self.no_pat = no_pat_prun_remove
+                
+            else:
+                self.V = V_prun_keep
+                self.W = W_prun_keep
+                self.classId = classId_prun_keep
+                self.centroid = centroid_prun_keep
+                self.no_pat = no_pat_prun_keep
 			
     
     def granular_phase_one_classifier(self, dataFilePath, chunk_size, type_chunk = 1, isPruning = False, valFile_Path = '', accuracyPerBox = 0.5, XlT = None, XuT = None, patClassIdTest = None, file_object_save = None):
@@ -1050,7 +1052,7 @@ class Info_Presentation_Multi_Layer_Classifier_GFMM(object):
         
         return result
 		
-	def predict_test_v2(self, V, W, classId, centroid, no_pat, XlT, XuT, patClassIdTest):
+    def predict_test_v2(self, V, W, classId, centroid, no_pat, XlT, XuT, patClassIdTest):
         """
         GFMM classification with hyperboxes stored in self. V, W, classId, centroid, no_pat
         For testing process
