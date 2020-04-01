@@ -5,6 +5,7 @@ Created on Thu Aug 30 22:39:47 2018
 @author: Thanh Tung Khuat
 
 Improved version of Online GFMM classifier (training core). Faster version on datasets with high dimensionality
+In this implementation, we do not use the branch and bound lemma
 
     Compare to previous version, in this coding, we find the hyperboxes representing the same label as the input pattern,
     The membership grades are only computed on those hyperboxes. In constrast, in the previous version, we find membership grades for all current hyperboxes and then filter hyperboxes with the same label as the input pattern
@@ -106,7 +107,7 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                 self.delay()
 
         self.misclass = 1
-        threshold = max(self.sigma, 1 - self.gamma * self.teta)
+        threshold = 0 # No using lemma for branch and bound
         # for each input sample
         for i in range(yX):
             classOfX = patClassId[i]
@@ -171,115 +172,97 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
 
                     b = memberG(X_l[i], X_u[i], V_sameX, W_sameX, self.gamma)
                     index = np.argsort(b)[::-1]
-                    consider_hypeboxes_id = index[b[index] >= threshold]
-                    #consider_hypeboxes_id = np.nonzero(b >= threshold)[0]
                     
-                    if len(consider_hypeboxes_id) > 0:
-                        #b = b[consider_hypeboxes_id]
-                        #index = np.argsort(b)[::-1]
-                        #consider_hypeboxes_id = consider_hypeboxes_id[index]   
-                    
-                        if b[index[0]] != 1 or (classOfX != lb_sameX[consider_hypeboxes_id[0]] and classOfX != UNLABELED_CLASS):
-                            adjust = False
+                    if b[index[0]] != 1 or (classOfX != lb_sameX[index[0]] and classOfX != UNLABELED_CLASS):
+                        adjust = False
+                        
+                        id_lb_diff = ((self.classId != classOfX) | (self.classId == UNLABELED_CLASS))
+                        V_diff = self.V[id_lb_diff]
+                        W_diff = self.W[id_lb_diff]
+                        
+                        indcomp = np.nonzero((W_diff >= V_diff).all(axis = 1))[0] 	# examine only hyperboxes w/o missing dimensions, meaning that in each dimension upper bound is larger than lowerbound
+                        no_check_overlap = False
+                        if len(indcomp) == 0 or len(V_diff) == 0:
+                            no_check_overlap = True
+                        else:
+                            V_diff = V_diff_save = V_diff[indcomp]
+                            W_diff = W_diff_save = W_diff[indcomp]
+                        
+                        for j in id_lb_sameX[index]:
+                            minV_new = np.minimum(self.V[j], X_l[i])
+                            maxW_new = np.maximum(self.W[j], X_u[i])
                             
-                            id_lb_diff = ((self.classId != classOfX) | (self.classId == UNLABELED_CLASS))
-                            V_diff = self.V[id_lb_diff]
-                            W_diff = self.W[id_lb_diff]
-                            
-                            indcomp = np.nonzero((W_diff >= V_diff).all(axis = 1))[0] 	# examine only hyperboxes w/o missing dimensions, meaning that in each dimension upper bound is larger than lowerbound
-                            no_check_overlap = False
-                            if len(indcomp) == 0 or len(V_diff) == 0:
-                                no_check_overlap = True
-                            else:
-                                V_diff = V_diff_save = V_diff[indcomp]
-                                W_diff = W_diff_save = W_diff[indcomp]
-                            
-                            for j in id_lb_sameX[consider_hypeboxes_id]:
-                                minV_new = np.minimum(self.V[j], X_l[i])
-                                maxW_new = np.maximum(self.W[j], X_u[i])
-                                
-                                # test violation of max hyperbox size and class labels
-                                if ((maxW_new - minV_new) <= teta).all() == True:
-                                    if no_check_overlap == False and classOfX == UNLABELED_CLASS and self.classId[j] == UNLABELED_CLASS:
-                                        # remove hyperbox themself
-                                        keep_id = (V_diff != self.V[j]).all(1)
-                                        V_diff = V_diff[keep_id]
-                                        W_diff = W_diff[keep_id]
-                                    # Test overlap    
-                                    if no_check_overlap == True or directedIsOverlap(V_diff, W_diff, minV_new, maxW_new) == False:		# overlap test
-                                        # adjust the j-th hyperbox
-                                        self.V[j] = minV_new
-                                        self.W[j] = maxW_new
-                                        if num_pat is None:
-                                            self.counter[j] = self.counter[j] + 1
-                                        else:
-                                            self.counter[j] = self.counter[j] + num_pat[i]
-                                        
-                                        if classOfX != UNLABELED_CLASS and self.classId[j] == UNLABELED_CLASS:
-                                            self.classId[j] = classOfX
-                                        
-                                        if self.isDraw:
-                                            # Handle drawing graph
-                                            box_color = 'k'
-                                            if self.classId[j] < len(mark_col):
-                                                box_color = mark_col[self.classId[j]]
-        
-                                            try:
-                                                listLines[j].remove()
-                                            except:
-                                                pass
-        
-                                            hyperbox = drawbox(np.asmatrix(self.V[j, 0:np.minimum(xX, 3)]), np.asmatrix(self.W[j, 0:np.minimum(xX, 3)]), drawing_canvas, box_color)
-                                            listLines[j] = hyperbox[0]
-                                            self.delay()
-                                        
-                                        adjust = True
-                                        break
+                            # test violation of max hyperbox size and class labels
+                            if ((maxW_new - minV_new) <= teta).all() == True:
+                                if no_check_overlap == False and classOfX == UNLABELED_CLASS and self.classId[j] == UNLABELED_CLASS:
+                                    # remove hyperbox themself
+                                    keep_id = (V_diff != self.V[j]).all(1)
+                                    V_diff = V_diff[keep_id]
+                                    W_diff = W_diff[keep_id]
+                                # Test overlap    
+                                if no_check_overlap == True or directedIsOverlap(V_diff, W_diff, minV_new, maxW_new) == False:		# overlap test
+                                    # adjust the j-th hyperbox
+                                    self.V[j] = minV_new
+                                    self.W[j] = maxW_new
+                                    if num_pat is None:
+                                        self.counter[j] = self.counter[j] + 1
                                     else:
-                                        if no_check_overlap == False and classOfX == UNLABELED_CLASS and self.classId[j] == UNLABELED_CLASS:                                   
-                                            V_diff = V_diff_save
-                                            W_diff = W_diff_save
+                                        self.counter[j] = self.counter[j] + num_pat[i]
+                                    
+                                    if classOfX != UNLABELED_CLASS and self.classId[j] == UNLABELED_CLASS:
+                                        self.classId[j] = classOfX
+                                    
+                                    if self.isDraw:
+                                        # Handle drawing graph
+                                        box_color = 'k'
+                                        if self.classId[j] < len(mark_col):
+                                            box_color = mark_col[self.classId[j]]
+    
+                                        try:
+                                            listLines[j].remove()
+                                        except:
+                                            pass
+    
+                                        hyperbox = drawbox(np.asmatrix(self.V[j, 0:np.minimum(xX, 3)]), np.asmatrix(self.W[j, 0:np.minimum(xX, 3)]), drawing_canvas, box_color)
+                                        listLines[j] = hyperbox[0]
+                                        self.delay()
+                                    
+                                    adjust = True
+                                    break
+                                else:
+                                    if no_check_overlap == False and classOfX == UNLABELED_CLASS and self.classId[j] == UNLABELED_CLASS:                                   
+                                        V_diff = V_diff_save
+                                        W_diff = W_diff_save
                                    
     
-                            # if i-th sample did not fit into any existing box, create a new one
-                            if not adjust:
-                                self.V = np.concatenate((self.V, X_l[i].reshape(1, -1)), axis = 0)
-                                self.W = np.concatenate((self.W, X_u[i].reshape(1, -1)), axis = 0)
-                                self.classId = np.concatenate((self.classId, [classOfX]))
-                                if num_pat is None:
-                                    self.counter = np.concatenate((self.counter, [1]))
-                                else:
-                                    self.counter = np.concatenate((self.counter, [num_pat[i]]))
-        
-                                if self.isDraw:
-                                    # handle drawing graph
-                                    box_color = 'k'
-                                    if self.classId[-1] < len(mark_col):
-                                        box_color = mark_col[self.classId[-1]]
-        
-                                    hyperbox = drawbox(np.asmatrix(X_l[i, 0:np.minimum(xX, 3)]), np.asmatrix(X_u[i, 0:np.minimum(xX, 3)]), drawing_canvas, box_color)
-                                    listLines.append(hyperbox[0])
-                                    self.delay()
-                    else:
-                        # If no hyperbox can expand to cover input pattern => Add new hyperbox
-                        self.V = np.concatenate((self.V, X_l[i].reshape(1, -1)), axis = 0)
-                        self.W = np.concatenate((self.W, X_u[i].reshape(1, -1)), axis = 0)
-                        self.classId = np.concatenate((self.classId, [classOfX]))
-                        if num_pat is None:
-                            self.counter = np.concatenate((self.counter, [1]))
-                        else:
-                            self.counter = np.concatenate((self.counter, [num_pat[i]]))
-                
-                        if self.isDraw:
-                            # handle drawing graph
-                            box_color = 'k'
-                            if self.classId[-1] < len(mark_col):
-                                box_color = mark_col[self.classId[-1]]
-
-                            hyperbox = drawbox(np.asmatrix(X_l[i, 0:np.minimum(xX, 3)]), np.asmatrix(X_u[i, 0:np.minimum(xX, 3)]), drawing_canvas, box_color)
-                            listLines.append(hyperbox[0])
-                            self.delay()
-
+                        # if i-th sample did not fit into any existing box, create a new one
+                        if not adjust:
+                            self.V = np.concatenate((self.V, X_l[i].reshape(1, -1)), axis = 0)
+                            self.W = np.concatenate((self.W, X_u[i].reshape(1, -1)), axis = 0)
+                            self.classId = np.concatenate((self.classId, [classOfX]))
+                            if num_pat is None:
+                                self.counter = np.concatenate((self.counter, [1]))
+                            else:
+                                self.counter = np.concatenate((self.counter, [num_pat[i]]))
+    
+                            if self.isDraw:
+                                # handle drawing graph
+                                box_color = 'k'
+                                if self.classId[-1] < len(mark_col):
+                                    box_color = mark_col[self.classId[-1]]
+    
+                                hyperbox = drawbox(np.asmatrix(X_l[i, 0:np.minimum(xX, 3)]), np.asmatrix(X_u[i, 0:np.minimum(xX, 3)]), drawing_canvas, box_color)
+                                listLines.append(hyperbox[0])
+                                self.delay()
+					else:
+						t = 0
+                        while (t + 1 < len(index)) and (b[index[t]] == 1) and (self.classId[index[t]] != classOfX):
+                            t = t + 1
+                        if b[index[t]] == 1 and self.classId[index[t]] == classOfX:
+                            if num_pat is None:
+                                self.counter[index[t]] = self.counter[index[t]] + 1
+                            else:
+                                self.counter[index[t]] = self.counter[index[t]] + num_pat[i]
                 else:
                     self.V = np.concatenate((self.V, X_l[i].reshape(1, -1)), axis = 0)
                     self.W = np.concatenate((self.W, X_u[i].reshape(1, -1)), axis = 0)
