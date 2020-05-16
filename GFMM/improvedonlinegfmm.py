@@ -196,7 +196,7 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                             if ((maxW_new - minV_new) <= teta).all() == True:
                                 if no_check_overlap == False and classOfX == UNLABELED_CLASS and self.classId[j] == UNLABELED_CLASS:
                                     # remove hyperbox themself
-                                    keep_id = (V_diff != self.V[j]).all(1)
+                                    keep_id = (V_diff != self.V[j]).any(1)
                                     V_diff = V_diff[keep_id]
                                     W_diff = W_diff[keep_id]
                                 # Test overlap    
