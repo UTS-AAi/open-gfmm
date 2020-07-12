@@ -256,13 +256,13 @@ class ImprovedOnlineGFMM(BaseGFMMClassifier):
                                 self.delay()
 					else:
 						t = 0
-                        while (t + 1 < len(index)) and (b[index[t]] == 1) and (self.classId[index[t]] != classOfX):
+                        while (t + 1 < len(index)) and (b[index[t]] == 1) and (self.classId[id_lb_sameX[index[t]]] != classOfX):
                             t = t + 1
-                        if b[index[t]] == 1 and self.classId[index[t]] == classOfX:
+                        if b[index[t]] == 1 and self.classId[id_lb_sameX[index[t]]] == classOfX:
                             if num_pat is None:
-                                self.counter[index[t]] = self.counter[index[t]] + 1
+                                self.counter[id_lb_sameX[index[t]]] = self.counter[id_lb_sameX[index[t]]] + 1
                             else:
-                                self.counter[index[t]] = self.counter[index[t]] + num_pat[i]
+                                self.counter[id_lb_sameX[index[t]]] = self.counter[id_lb_sameX[index[t]]] + num_pat[i]
                 else:
                     self.V = np.concatenate((self.V, X_l[i].reshape(1, -1)), axis = 0)
                     self.W = np.concatenate((self.W, X_u[i].reshape(1, -1)), axis = 0)
