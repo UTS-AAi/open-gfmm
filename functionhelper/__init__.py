@@ -14,3 +14,5 @@ Initial file for the python directory
 UNLABELED_CLASS = -1
 
 epsilon_missing_value = 0.001
+
+default_categorical_value = 10000
